@@ -78,16 +78,16 @@ def detect_image(image, detection_model):
         name_ids.append(n+' '+str(i))
     pred['name_id'] = name_ids
         
-    for i in range(len(pred[pred.confidence > 0.5])):
+    for i in range(len(pred[pred.confidence > 0])):
         
         x1 = int(pred.xmin.iloc[i])
         y1 = int(pred.ymin.iloc[i])
         x2 = int(pred.xmax.iloc[i])
         y2 = int(pred.ymax.iloc[i])
         
-        if pred.confidence.iloc[i] > 0.9:
+        if pred.confidence.iloc[i] > 0.75:
             i_color = good_color
-        elif pred.confidence.iloc[i] > 0.7:
+        elif pred.confidence.iloc[i] > 0.4:
             i_color = neutral_color
         else:
             i_color = bad_color
@@ -129,8 +129,8 @@ if file: # if user uploaded file
     st.header('Результат детекции')
     
     col1, col2 = st.columns(2)
-    col1.metric("Количество тигров", str(pred_data[(pred_data.name == 'Tiger')&(pred_data.confidence > 0.5)].shape[0]))
-    col2.metric("Количество леопардов", str(pred_data[(pred_data.name == 'Leopard')&(pred_data.confidence > 0.5)].shape[0]))
+    col1.metric("Количество тигров", str(pred_data[(pred_data.name == 'Tiger')&(pred_data.confidence > 0)].shape[0]))
+    col2.metric("Количество леопардов", str(pred_data[(pred_data.name == 'Leopard')&(pred_data.confidence > 0)].shape[0]))
     st.image(processed_image)
     
 # <------------------------------------------------------------------------->   
