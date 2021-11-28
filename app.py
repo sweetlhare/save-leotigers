@@ -20,6 +20,7 @@ good_color = (17, 173, 46)
 cloud_model_location = '1rTTqtAyP7AwGNNFMd-cGrx1A0mmO1XEY'
 cloud_archive_features = '1zjp8NgTGby5lLCotFZfVMk8cl3TIf--L'
 cloud_archive_df = '18Nxx7QiBvCB3UfnXPWo-VhP76Tn1dXLy'
+cloud_princess_tracking = '12NA-F-Qhm1zKB1lTT3mqejhcUtv0LclM'
 
 @st.cache(ttl=36000, max_entries=1000)
 def load_archive():
@@ -38,6 +39,13 @@ def load_archive():
             gdd.download_file_from_google_drive(file_id=cloud_archive_df,
                                                 dest_path=Path('archive/archive_df.csv'),
                                                 unzip=False)
+            
+    with st.spinner("Downloading archive data... this may take awhile! \n Don't stop it!"):
+        if not Path('archive_df.csv').exists():
+            gdd.download_file_from_google_drive(file_id=cloud_princess_tracking,
+                                                dest_path=Path('archive/princess_tracking.csv'),
+                                                unzip=False)
+            
     return True
 
 print(load_archive())
@@ -139,27 +147,23 @@ if file: # if user uploaded file
     
     if option in list(pred_data.name_id.values):
         
-        if get_animal_idx(image, pred_data[pred_data.name_id == option]):
-            
-            # col3, col4 = st.columns(2)
+        flag, prob = get_animal_idx(image, pred_data[pred_data.name_id == option])
         
-            # col3.metric(label='ID животного', value=idx, 
-            #             delta='{}%'.format(round(100*pred_data[pred_data.name_id == option].confidence.iloc[0])), 
-            #                                delta_color="off")
-            st.metric('Имя', 'Принцесса')
+        st.metric('Вероятность того, что выбранное животное - тигрица Принцесса', '{}%'.format(prob))
+        
+        if flag:
+            
+            df = pd.read_csv('archive/princess_tracking.csv', sep=';')
+            
+            st.metric('Имя', df.name.iloc[0])
             
             col5, col6 = st.columns(2)
-            col5.metric('Возраст', 'Взрослый') # взрослый, молодой, пожилой, детеныш
+            col5.metric('Возраст', '{} лет'.format(df.age.iloc[0])) # взрослый, молодой, пожилой, детеныш
             col6.metric('Болезненность', 'Отсутствует')
     
 # <------------------------------------------------------------------------->   
-    
-    
-            df = pd.DataFrame(
-                np.random.randn(100, 2) / [2, 2] + [45.37, 136.21],
-                columns=['latitude', 'longitude'])
         
-            map_heatmap = folium.Map(location=[45.37, 136.21], zoom_start=8)
+            map_heatmap = folium.Map(location=[df.latitude.mean(), df.longitude.mean()], zoom_start=9)
         
             # Filter the DF for columns, then remove NaNs
             heat_df = df[["latitude", "longitude"]]
@@ -174,8 +178,9 @@ if file: # if user uploaded file
             HeatMap(heat_data).add_to(map_heatmap)
         
             # Display the map using the community component
-            st.subheader('Тепловая карта перемещений')
-            folium_static(map_heatmap)\
+            heat_freq = st.checkbox('Тепловая карта частоты перемещения')
+            if heat_freq:
+                folium_static(map_heatmap)
             
         else:
             st.markdown(f'<p style="color:#B34746;font-size:40px;">Выбранное животное - не тигрица Принцесса</p>', unsafe_allow_html=True)
