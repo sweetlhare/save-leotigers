@@ -22,7 +22,7 @@ cloud_archive_features = '1zjp8NgTGby5lLCotFZfVMk8cl3TIf--L'
 cloud_archive_df = '18Nxx7QiBvCB3UfnXPWo-VhP76Tn1dXLy'
 cloud_princess_tracking = '12NA-F-Qhm1zKB1lTT3mqejhcUtv0LclM'
 
-@st.cache(ttl=36000, max_entries=1000)
+@st.cache(ttl=3600, max_entries=10)
 def load_archive():
     
     save_dest = Path('archive')
@@ -52,7 +52,7 @@ print(load_archive())
 from princess_identification import check_is_princess
 
 
-@st.cache(ttl=36000, max_entries=1000)
+@st.cache(ttl=3600, max_entries=10)
 def load_model():
     
     save_dest = Path('model')
