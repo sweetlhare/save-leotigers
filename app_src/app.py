@@ -96,7 +96,7 @@ def detect_image(image, detection_model):
         image = cv2.putText(image, 
                             '{} - {}%'.format(pred.name_id.iloc[i], round(100*pred.confidence.iloc[i])), 
                             (x1-50, y1-10), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 3.5, i_color, 5)
+                            cv2.FONT_HERSHEY_SIMPLEX, 2, i_color, 4)
         
     return image, pred
 
