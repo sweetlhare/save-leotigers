@@ -137,53 +137,58 @@ if file: # if user uploaded file
     
     st.header('Информация о животных')
     
-    options = list(pred_data.name_id.values)
-    options.append('Отменить выбор')
+    if 'Leopard' in pred_data.name.unique():
+        st.markdown(f'<p style="color:#B34746;font-size:40px;">На картинке есть только леопард</p>', unsafe_allow_html=True)
+    if len(pred_data.name.unique()) == 0:
+        st.markdown(f'<p style="color:#B34746;font-size:40px;">На картинке нет ни тигров, ни леопардов</p>', unsafe_allow_html=True)
+    else:
+        options = list(pred_data.name_id.values)
+        options.append('Отменить выбор')
     
-    option = st.selectbox(
-        'Просмотреть информацию по распознанным животным',
-        options
-    )
-    
-    if option in list(pred_data.name_id.values):
+        option = st.selectbox(
+            'Просмотреть информацию по распознанным животным',
+            options
+        )
         
-        flag, prob = get_animal_idx(image, pred_data[pred_data.name_id == option])
-        
-        st.metric('Вероятность того, что выбранное животное - тигрица Принцесса', '{}%'.format(prob))
-        
-        if flag:
+        if option in list(pred_data.name_id.values) and pred_data[pred_data.name_id == option].name.iloc[0] == 'Tiger':
             
-            df = pd.read_csv('archive/princess_tracking.csv', sep=';')
+            flag, prob = get_animal_idx(image, pred_data[pred_data.name_id == option])
             
-            st.metric('Имя', df.name.iloc[0])
+            st.metric('Вероятность того, что выбранное животное - тигрица Принцесса', '{}%'.format(prob))
             
-            col5, col6 = st.columns(2)
-            col5.metric('Возраст', '{} лет'.format(df.age.iloc[0])) # взрослый, молодой, пожилой, детеныш
-            col6.metric('Болезненность', 'Отсутствует')
-    
-# <------------------------------------------------------------------------->   
+            if flag:
+                
+                df = pd.read_csv('archive/princess_tracking.csv', sep=';')
+                
+                st.metric('Имя', df.name.iloc[0])
+                
+                col5, col6 = st.columns(2)
+                col5.metric('Возраст', '{} лет'.format(df.age.iloc[0])) # взрослый, молодой, пожилой, детеныш
+                col6.metric('Болезненность', 'Отсутствует')
         
-            map_heatmap = folium.Map(location=[df.latitude.mean(), df.longitude.mean()], zoom_start=9)
-        
-            # Filter the DF for columns, then remove NaNs
-            heat_df = df[["latitude", "longitude"]]
-            heat_df = heat_df.dropna(axis=0, subset=["latitude", "longitude"])
-        
-            # List comprehension to make list of lists
-            heat_data = [
-                [row["latitude"], row["longitude"]] for index, row in heat_df.iterrows()
-            ]
-        
-            # Plot it on the map
-            HeatMap(heat_data).add_to(map_heatmap)
-        
-            # Display the map using the community component
-            heat_freq = st.checkbox('Тепловая карта частоты перемещения')
-            if heat_freq:
-                folium_static(map_heatmap)
+    # <------------------------------------------------------------------------->   
             
-        else:
-            st.markdown(f'<p style="color:#B34746;font-size:40px;">Выбранное животное - не тигрица Принцесса</p>', unsafe_allow_html=True)
+                map_heatmap = folium.Map(location=[df.latitude.mean(), df.longitude.mean()], zoom_start=9)
+            
+                # Filter the DF for columns, then remove NaNs
+                heat_df = df[["latitude", "longitude"]]
+                heat_df = heat_df.dropna(axis=0, subset=["latitude", "longitude"])
+            
+                # List comprehension to make list of lists
+                heat_data = [
+                    [row["latitude"], row["longitude"]] for index, row in heat_df.iterrows()
+                ]
+            
+                # Plot it on the map
+                HeatMap(heat_data).add_to(map_heatmap)
+            
+                # Display the map using the community component
+                heat_freq = st.checkbox('Тепловая карта частоты перемещения')
+                if heat_freq:
+                    folium_static(map_heatmap)
+                
+            else:
+                st.markdown(f'<p style="color:#B34746;font-size:40px;">Выбранное животное - не тигрица Принцесса</p>', unsafe_allow_html=True)
     
     
     
