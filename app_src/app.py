@@ -29,19 +29,19 @@ def load_archive():
     save_dest.mkdir(exist_ok=True)
                      
     with st.spinner("Downloading archive data... this may take awhile! \n Don't stop it!"):
-        if not Path('archive_features.npy').exists():
+        if not Path('archive/archive_features.npy').exists():
             gdd.download_file_from_google_drive(file_id=cloud_archive_features,
                                                 dest_path=Path('archive/archive_features.npy'),
                                                 unzip=False)
     
     with st.spinner("Downloading archive data... this may take awhile! \n Don't stop it!"):
-        if not Path('archive_df.csv').exists():
+        if not Path('archive/archive_df.csv').exists():
             gdd.download_file_from_google_drive(file_id=cloud_archive_df,
                                                 dest_path=Path('archive/archive_df.csv'),
                                                 unzip=False)
             
     with st.spinner("Downloading archive data... this may take awhile! \n Don't stop it!"):
-        if not Path('archive_df.csv').exists():
+        if not Path('archive/princess_tracking.csv').exists():
             gdd.download_file_from_google_drive(file_id=cloud_princess_tracking,
                                                 dest_path=Path('archive/princess_tracking.csv'),
                                                 unzip=False)
