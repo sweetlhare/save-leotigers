@@ -27,8 +27,8 @@ class FeatureExtractor:
         img[:, :, 1] = gray_img
         img[:, :, 2] = gray_img
         
-        img = img[int(xmin):int(xmax), 
-                  int(ymin):int(ymax), : ] 
+        img = img[int(ymin):int(ymax), 
+                  int(xmin):int(xmax), : ] 
         
         img = cv2.resize(img, (456, 456))
         x = np.expand_dims(img, axis=0)
