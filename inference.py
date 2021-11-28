@@ -93,8 +93,8 @@ class FeatureExtractor:
         img[:, :, 1] = gray_img
         img[:, :, 2] = gray_img
         
-        img = img[max(0, int(xmin)):int(xmax), 
-                  max(0, int(ymin)):int(ymax), : ] 
+        img = img[max(0, int(ymin)):int(ymax), 
+                  max(0, int(xmin)):int(xmax), : ] 
         try:
             img = cv2.resize(img, (456, 456))
         except:
