@@ -10,6 +10,10 @@ from folium.plugins import HeatMap
 import folium
 from streamlit_folium import folium_static
 
+from google_drive_downloader import GoogleDriveDownloader as gdd
+
+# 'https://drive.google.com/file/d/1rTTqtAyP7AwGNNFMd-cGrx1A0mmO1XEY/view?usp=sharing'
+
 
 bad_color = (179, 26, 18)
 neutral_color = (250, 212, 1)
@@ -22,9 +26,9 @@ princess_id = 2022
 #     detection_model = torch.hub.load('ultralytics/yolov5', 'custom', path='model/best.pt', force_reload=True)  # default
 #     return detection_model
 
-cloud_model_location = 'https://drive.google.com/file/d/1rTTqtAyP7AwGNNFMd-cGrx1A0mmO1XEY/view?usp=sharing'
+cloud_model_location = '1rTTqtAyP7AwGNNFMd-cGrx1A0mmO1XEY'
 
-@st.cache
+@st.cache(ttl=36000, max_entries=1000)
 def load_model():
     
     save_dest = Path('model')
@@ -33,8 +37,9 @@ def load_model():
                      
     if not f_checkpoint.exists():
         with st.spinner("Downloading model... this may take awhile! \n Don't stop it!"):
-            from GD_download import download_file_from_google_drive
-            download_file_from_google_drive(cloud_model_location, f_checkpoint)
+            gdd.download_file_from_google_drive(file_id=cloud_model_location,
+                                    dest_path=f_checkpoint,
+                                    unzip=False)
     
     detection_model = torch.hub.load('ultralytics/yolov5', 'custom', path=f_checkpoint, force_reload=True)
     
