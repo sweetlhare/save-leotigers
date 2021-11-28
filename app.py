@@ -12,21 +12,37 @@ from streamlit_folium import folium_static
 
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
-# 'https://drive.google.com/file/d/1rTTqtAyP7AwGNNFMd-cGrx1A0mmO1XEY/view?usp=sharing'
-
 
 bad_color = (179, 26, 18)
 neutral_color = (250, 212, 1)
 good_color = (17, 173, 46)
 
-princess_id = 2022
-
-# @st.cache()
-# def load_model(path='models/best.pt', device='cpu'):
-#     detection_model = torch.hub.load('ultralytics/yolov5', 'custom', path='model/best.pt', force_reload=True)  # default
-#     return detection_model
-
 cloud_model_location = '1rTTqtAyP7AwGNNFMd-cGrx1A0mmO1XEY'
+cloud_archive_features = '1zjp8NgTGby5lLCotFZfVMk8cl3TIf--L'
+cloud_archive_df = '18Nxx7QiBvCB3UfnXPWo-VhP76Tn1dXLy'
+
+@st.cache(ttl=36000, max_entries=1000)
+def load_archive():
+    
+    save_dest = Path('archive')
+    save_dest.mkdir(exist_ok=True)
+                     
+    with st.spinner("Downloading archive data... this may take awhile! \n Don't stop it!"):
+        if not Path('archive_features.npy').exists():
+            gdd.download_file_from_google_drive(file_id=cloud_archive_features,
+                                                dest_path=Path('archive/archive_features.npy'),
+                                                unzip=False)
+    
+    with st.spinner("Downloading archive data... this may take awhile! \n Don't stop it!"):
+        if not Path('archive_df.csv').exists():
+            gdd.download_file_from_google_drive(file_id=cloud_archive_df,
+                                                dest_path=Path('archive/archive_df.csv'),
+                                                unzip=False)
+    return True
+
+print(load_archive())
+from princess_identification import check_is_princess
+
 
 @st.cache(ttl=36000, max_entries=1000)
 def load_model():
@@ -77,9 +93,9 @@ def detect_image(image, detection_model):
     return image, pred
 
 
-def get_animal_idx(pred_data):
-    return princess_id
-    # return np.random.randint(1000)
+def get_animal_idx(image, pred_data):
+    xmin, ymin, xmax, ymax = pred_data[['xmin', 'ymin', 'xmax', 'ymax']].iloc[0]
+    return check_is_princess(image, xmin, ymin, xmax, ymax)
 
     
 # <------------------------------------------------------------------------->
@@ -123,43 +139,46 @@ if file: # if user uploaded file
     
     if option in list(pred_data.name_id.values):
         
-        col3, col4 = st.columns(2)
+        if get_animal_idx(image, pred_data[pred_data.name_id == option]):
+            
+            # col3, col4 = st.columns(2)
         
-        idx = get_animal_idx(pred_data[pred_data.name_id == option])
-        
-        col3.metric(label='ID животного', value=idx, 
-                    delta='{}%'.format(round(100*pred_data[pred_data.name_id == option].confidence.iloc[0])), 
-                                       delta_color="off")
-        col4.metric('Имя', 'Принцесса')
-        
-        col5, col6 = st.columns(2)
-        col5.metric('Возраст', 'Взрослый') # взрослый, молодой, пожилой, детеныш
-        col6.metric('Болезненность', 'Отсутствует')
+            # col3.metric(label='ID животного', value=idx, 
+            #             delta='{}%'.format(round(100*pred_data[pred_data.name_id == option].confidence.iloc[0])), 
+            #                                delta_color="off")
+            st.metric('Имя', 'Принцесса')
+            
+            col5, col6 = st.columns(2)
+            col5.metric('Возраст', 'Взрослый') # взрослый, молодой, пожилой, детеныш
+            col6.metric('Болезненность', 'Отсутствует')
     
 # <------------------------------------------------------------------------->   
     
     
-        df = pd.DataFrame(
-            np.random.randn(100, 2) / [2, 2] + [45.37, 136.21],
-            columns=['latitude', 'longitude'])
-    
-        map_heatmap = folium.Map(location=[45.37, 136.21], zoom_start=8)
-    
-        # Filter the DF for columns, then remove NaNs
-        heat_df = df[["latitude", "longitude"]]
-        heat_df = heat_df.dropna(axis=0, subset=["latitude", "longitude"])
-    
-        # List comprehension to make list of lists
-        heat_data = [
-            [row["latitude"], row["longitude"]] for index, row in heat_df.iterrows()
-        ]
-    
-        # Plot it on the map
-        HeatMap(heat_data).add_to(map_heatmap)
-    
-        # Display the map using the community component
-        st.subheader('Тепловая карта перемещений')
-        folium_static(map_heatmap)
+            df = pd.DataFrame(
+                np.random.randn(100, 2) / [2, 2] + [45.37, 136.21],
+                columns=['latitude', 'longitude'])
+        
+            map_heatmap = folium.Map(location=[45.37, 136.21], zoom_start=8)
+        
+            # Filter the DF for columns, then remove NaNs
+            heat_df = df[["latitude", "longitude"]]
+            heat_df = heat_df.dropna(axis=0, subset=["latitude", "longitude"])
+        
+            # List comprehension to make list of lists
+            heat_data = [
+                [row["latitude"], row["longitude"]] for index, row in heat_df.iterrows()
+            ]
+        
+            # Plot it on the map
+            HeatMap(heat_data).add_to(map_heatmap)
+        
+            # Display the map using the community component
+            st.subheader('Тепловая карта перемещений')
+            folium_static(map_heatmap)\
+            
+        else:
+            st.markdown(f'<p style="color:#B34746;font-size:40px;">Выбранное животное - не тигрица Принцесса</p>', unsafe_allow_html=True)
     
     
     
