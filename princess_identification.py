@@ -54,10 +54,18 @@ def find_nearest(tfs, trfs, df):
     return typs
     
 
-def check_is_princess(image, xmin, ymin, xmax, ymax):    
+def check_is_princess(image, xmin, ymin, xmax, ymax, k=5):    
     features = fe.extract_image(image, xmin, ymin, xmax, ymax)
-    is_princess = find_nearest(features, archive_features, archive_df)[0]
-    if is_princess == 1:
-        return True
+    probs = find_nearest(features, archive_features, archive_df)[:k]
+    probs_weights = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+    prob = 0
+    sum_weight = 0
+    for i in range(k):
+        prob += probs[i] * probs_weights[i]
+        sum_weight += probs_weights[i]
+    prob /= sum_weight
+    
+    if prob > 0.4:
+        return True, round(100*prob)
     else:
-        return False
+        return False, round(100*prob)
